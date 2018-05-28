@@ -9,8 +9,6 @@
 // | Author: 流年 <liu21st@gmail.com>
 // +----------------------------------------------------------------------
 
-use PHPMailer\PHPMailer\PHPMailer;
-
 // 应用公共文件
 
 /**
@@ -23,7 +21,7 @@ use PHPMailer\PHPMailer\PHPMailer;
  * @return boolean
  */
 function send_mail($tomail, $name, $subject = '', $body = '', $attachment = null) {
-	$mail             = new PHPMailer();           //实例化PHPMailer对象
+	$mail             = new \PHPMailer\PHPMailer\PHPMailer();          //实例化PHPMailer对象
 	$mail->CharSet    = 'UTF-8';           //设定邮件编码，默认ISO-8859-1，如果发中文此项必须设置，否则乱码
 	$mail->IsSMTP();                    // 设定使用SMTP服务
 	$mail->SMTPDebug  = 0;               // SMTP调试功能 0=关闭 1 = 错误和消息 2 = 消息
@@ -47,4 +45,66 @@ function send_mail($tomail, $name, $subject = '', $body = '', $attachment = null
     }
     return $mail->Send() ? true : $mail->ErrorInfo;
 }
+
+
+/**
+ * excel表格导出
+ * @param string $fileName 文件名称
+ * @param array $headArr 表头名称
+ * @param array $data 要导出的数据 
+ * */
+function excel_export($fileName = '', $headArr = [], $data = []){
+    if( empty($fileName) ) $fileName = time();
+
+    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+
+    if( empty($headArr) ){
+        $headArr = array_keys($data[0]);
+    }
+    
+    $sheet->fromArray($headArr);
+    $sheet->fromArray($data,null,'A2');
+
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');//告诉浏览器输出07Excel文件
+    //header('Content-Type:application/vnd.ms-excel');//告诉浏览器将要输出Excel03版本文件
+    header("Content-Disposition: attachment;filename='{$fileName}.xlsx'");//告诉浏览器输出浏览器名称
+    header('Cache-Control: max-age=0');//禁止缓存
+    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+    $writer->save('php://output');
+    exit;
+}
+
+/**
+ * excel表格导入
+ * @param array $file 文件上传 eg: $_FILE['name']
+ * @param array $data 导入的数据 
+ * */
+function excel_import($file=''){
+    $filename = $file['tmp_name'];
+
+    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+
+    $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+
+    if( !$reader->canRead($filename) ){
+        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+        if( !$reader->canRead($filename) ) {
+            echo "<script>alert('excel读取失败，只能读取xls、xlsx格式!');history.go(-1)</script>"; exit;
+        }
+    }
+
+    $obj = $reader->load($filename);
+
+    $sheet = $obj->getSheet(0);
+
+    $highestRow = $sheet->getHighestRow();       // 取得总行数
+    $highestColumn = $sheet->getHighestColumn(); // 取得总列数
+
+    //echo $sheet->getCellByColumnAndRow(1, 1)->getCalculatedValue();
+    $data = $sheet->rangeToArray("A1:$highestColumn$highestRow",1,true,true,true);
+    return $data;
+}
+
+
 
