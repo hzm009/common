@@ -276,8 +276,8 @@ function rand_string($len = 5, $type = '2', $addChars = '')
  */
 function get_current_url()
 {
-    $result = $_SERVER['REQUEST_URI'] ? trim(C('pin_site_host'),'/').$_SERVER['REQUEST_URI'] :
-        trim(C('pin_site_host'),'/').$_SERVER['PHP_SELF'].'?'.$_SERVER['QUERY_STRING'];
+    $result = $_SERVER['REQUEST_URI'] ? trim(config('pin_site_host'),'/').$_SERVER['REQUEST_URI'] :
+        trim(config('pin_site_host'),'/').$_SERVER['PHP_SELF'].'?'.$_SERVER['QUERY_STRING'];
     return $result;
 }
 
