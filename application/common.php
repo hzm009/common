@@ -141,11 +141,11 @@ function validate_phone($str_data)
 
 /**
  * 接口请求 调用第三方接口
- * @param $url
- * @array $parameter  参数
+ * @param string $url
+ * @param array $parameter  参数
  * @return mixed
  */
-function request_url($url,$parameter)
+function request_url($url,$parameter=array())
 {
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
@@ -346,6 +346,26 @@ function is_mobile(){
         }
     }
     return $result;
+}
+
+/**
+ * 取得文件扩展名
+ * @param string $filename 文件名
+ * @return string 后缀
+ */
+function file_ext($filename) {
+    $pathinfo = pathinfo($filename);
+    return $pathinfo['extension'];
+}
+
+/**
+ * 取得ip地理位置
+ * @param string $ip 文件名
+ * @return array 地理位置
+ */
+function get_ip_location($ip) {
+    $ipLocation = new \IpLocation\IpLocationForQQ();
+    return $ipLocation->getlocation($ip);
 }
 
 
